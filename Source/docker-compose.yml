@@ -4,20 +4,21 @@ services:
     container_name: tiny-ip-monitor
     restart: unless-stopped
     ports:
-      - "8081:8080"  # Map host port 8081 to container port 8080
+      - "8081:8080"  # Web dashboard at http://localhost:8081
     volumes:
-      # Mount logs directory with proper permissions
       - ./logs:/var/log:rw
       - /etc/localtime:/etc/localtime:ro
     environment:
       - TZ=UTC
       - WEB_PORT=8080
-      # VPN Monitor Configuration
-      - ALLOWED_IP_RANGE=213.187.0.0/16
-      - WEBHOOK_URL=http://homeassistant.local:8123/api/webhook/-2kau6-2KtvhxiLE2IFETJp7i
+      
+      # VPN Configuration - Replace with your VPN's IP range
+      - ALLOWED_IP_RANGE=185.220.100.0/22
+      - WEBHOOK_URL=http://homeassistant.local:8123/api/webhook/your-webhook-id
       - WEBHOOK_METHOD=POST
       - WEBHOOK_USER=
       - WEBHOOK_PASS=
+      
       # CRON Configuration
       # Format: "minute hour day month weekday"
       # Examples:
@@ -27,8 +28,8 @@ services:
       #   "0 9,21 * * *"     - At 9 AM and 9 PM daily
       #   "0 */2 * * *"      - Every 2 hours
       #   "0 0 * * *"        - Once daily at midnight
-      - CRON_SCHEDULE=0 */12 * * *
-      # Logging level (DEBUG, INFO, WARNING, ERROR)
+      
+      - CRON_SCHEDULE=0 */12 * * *     # Every 12 hours
       - LOG_LEVEL=INFO
     healthcheck:
       test: ["CMD-SHELL", "python /app/test_logging.py && wget --quiet --tries=1 --spider http://localhost:8080/health || exit 1"]
@@ -36,7 +37,6 @@ services:
       timeout: 15s
       retries: 3
       start_period: 60s
-    # Ensure proper logging to both container logs and files
     logging:
       driver: "json-file"
       options:
