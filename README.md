@@ -2,6 +2,8 @@
 
 A lightweight, containerized VPN monitoring solution that automatically alerts you when your public IP address falls outside your VPN's expected range.
 
+![Tiny IP Monitor Dashboard](Documentation/1.png)
+
 ## Features
 
 - **🎯 Simple Setup** - Single Docker container with web interface
