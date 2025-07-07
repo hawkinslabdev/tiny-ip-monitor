@@ -96,12 +96,12 @@ class VPNMonitorContainer:
             return False
     
     def run_initial_check(self):
-        """Run initial VPN check"""
+        """Run initial IP check"""
         try:
-            logger.info("Running initial VPN check...")
+            logger.info("Running initial IP check...")
             
             with open(self.log_file, 'a') as f:
-                f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] INFO: Running initial VPN check\n")
+                f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] INFO: Running initial IP check\n")
             
             # Import and run monitor
             from monitor import VPNMonitor
