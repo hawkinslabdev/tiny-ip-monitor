@@ -1,7 +1,7 @@
-FROM python:3.14.0b3-alpine3.21
+FROM python:3.12-alpine3.19
 
 # Install system dependencies
-RUN apk add --no-cache dcron tzdata
+RUN apk add --no-cache dcron tzdata wget
 
 # Set working directory
 WORKDIR /app
@@ -15,10 +15,12 @@ COPY monitor.py .
 COPY config.py .
 COPY app.py .
 COPY startup.py .
+COPY test_logging.py .
 COPY templates/ ./templates/
 
-# Create log directory
-RUN mkdir -p /var/log && chmod 755 /var/log
+# Create necessary directories
+RUN mkdir -p /var/log /app/data && \
+    chmod 755 /var/log /app/data
 
 # Expose web UI port
 EXPOSE 8080

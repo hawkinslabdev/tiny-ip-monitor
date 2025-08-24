@@ -3,396 +3,452 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VPN IP Monitor</title>
+    <title>ip monitor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        border: "hsl(214.3 31.8% 91.4%)",
-                        input: "hsl(214.3 31.8% 91.4%)",
-                        ring: "hsl(222.2 84% 4.9%)",
-                        background: "hsl(0 0% 100%)",
-                        foreground: "hsl(222.2 84% 4.9%)",
-                        primary: {
-                            DEFAULT: "hsl(222.2 47.4% 11.2%)",
-                            foreground: "hsl(210 40% 98%)",
-                        },
-                        secondary: {
-                            DEFAULT: "hsl(210 40% 96%)",
-                            foreground: "hsl(222.2 84% 4.9%)",
-                        },
-                        destructive: {
-                            DEFAULT: "hsl(0 84.2% 60.2%)",
-                            foreground: "hsl(210 40% 98%)",
-                        },
-                        muted: {
-                            DEFAULT: "hsl(210 40% 96%)",
-                            foreground: "hsl(215.4 16.3% 46.9%)",
-                        },
-                        accent: {
-                            DEFAULT: "hsl(210 40% 96%)",
-                            foreground: "hsl(222.2 84% 4.9%)",
-                        },
-                        success: {
-                            DEFAULT: "hsl(142 76% 36%)",
-                            foreground: "hsl(355.7 100% 97.3%)",
-                        },
-                    },
-                    borderRadius: {
-                        lg: "var(--radius)",
-                        md: "calc(var(--radius) - 2px)",
-                        sm: "calc(var(--radius) - 4px)",
-                    },
-                    animation: {
-                        "fade-in": "fadeIn 0.5s ease-in-out",
-                        "slide-up": "slideUp 0.3s ease-out",
-                        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            "0%": { opacity: "0" },
-                            "100%": { opacity: "1" },
-                        },
-                        slideUp: {
-                            "0%": { transform: "translateY(10px)", opacity: "0" },
-                            "100%": { transform: "translateY(0)", opacity: "1" },
-                        },
-                    },
-                }
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        .status-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
-    </script>
-    <style>
-        :root {
-            --radius: 0.5rem;
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
         }
-        .glass-morphism {
-            background: rgba(255, 255, 255, 0.7);
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .status-indicator {
-            position: relative;
-            display: inline-block;
-        }
-        .status-indicator::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            animation: pulse 2s infinite;
-        }
-        .status-ok::after {
-            background: rgba(34, 197, 94, 0.3);
-        }
-        .status-alert::after {
-            background: rgba(239, 68, 68, 0.3);
+        
+        .config-locked {
+            background: linear-gradient(45deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
         }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-    <!-- Background Pattern -->
-    <div class="fixed inset-0 opacity-30">
-        <svg class="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.1"/>
-                </pattern>
-            </defs>
-        </svg>
-    </div>
-
-    <div class="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
-        <!-- Header Section -->
-        <div class="glass-morphism rounded-2xl p-8 mb-8 animate-fade-in">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                        </svg>
+<body class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
+    <!-- Navigation -->
+    <nav class="glass sticky top-0 z-50 border-b border-white/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                        <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
                     </div>
-                    <div>
-                        <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
-                            VPN IP Monitor
-                        </h1>
-                        <p class="text-slate-600 mt-1">Real-time monitoring with intelligent alerts</p>
-                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">ip monitor</h1>
                 </div>
-                <button onclick="location.reload()" 
-                        class="inline-flex items-center px-4 py-2 bg-white/80 hover:bg-white border border-slate-200 rounded-lg text-slate-700 hover:text-slate-900 transition-all duration-200 shadow-sm hover:shadow-md">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                    Refresh
-                </button>
+                <div class="flex items-center space-x-4">
+                    <a href="/logs" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
+                        <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
+                        Logs
+                    </a>
+                    <a href="/config" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
+                        <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
+                        Config
+                    </a>
+                    <button onclick="refreshData()" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                        Refresh
+                    </button>
+                </div>
             </div>
         </div>
+    </nav>
 
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Status Card -->
-        <div class="glass-morphism rounded-2xl p-8 mb-8 animate-slide-up">
+        <div class="glass rounded-2xl p-8 mb-8 slide-up">
             <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center space-x-3">
-                    <div class="status-indicator w-3 h-3 rounded-full {{ 'bg-green-500' if status.in_range else 'bg-red-500' }} {{ 'status-ok' if status.in_range else 'status-alert' }}"></div>
-                    <h2 class="text-2xl font-semibold text-slate-900">
-                        Status: <span class="{{ 'text-green-600' if status.in_range else 'text-red-600' }}">{{ status.status }}</span>
+                <div class="flex items-center space-x-4">
+                    <div id="statusIndicator" class="w-4 h-4 rounded-full bg-green-500 status-pulse"></div>
+                    <h2 class="text-2xl font-bold text-gray-900">
+                        Status: <span id="statusText" class="text-green-600">Loading...</span>
                     </h2>
                 </div>
-                <div class="flex items-center space-x-2 text-sm text-slate-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Last updated: {{ status.timestamp.split('T')[1].split('.')[0] }}
+                <div class="text-sm text-gray-500">
+                    Last check: <span id="lastUpdate">--:--:--</span>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white/60 rounded-xl p-4 border border-white/20">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm text-slate-600 font-medium">Current IP</p>
-                            <p class="text-lg font-semibold text-slate-900 font-mono">{{ status.current_ip }}</p>
-                        </div>
+                <div class="bg-white/60 rounded-xl p-6 border border-white/30">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <i data-lucide="globe" class="w-5 h-5 text-blue-600"></i>
+                        <h3 class="font-medium text-gray-900">Current IP</h3>
                     </div>
+                    <p id="currentIP" class="text-xl font-mono font-bold text-gray-800">Loading...</p>
+                    <p class="text-sm text-gray-500 mt-1" id="ipStatus">Checking...</p>
                 </div>
 
-                <div class="bg-white/60 rounded-xl p-4 border border-white/20">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm text-slate-600 font-medium">Allowed Range</p>
-                            <p class="text-lg font-semibold text-slate-900 font-mono">{{ status.allowed_range }}</p>
-                        </div>
+                <div class="bg-white/60 rounded-xl p-6 border border-white/30">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
+                        <h3 class="font-medium text-gray-900">Safe Ranges</h3>
                     </div>
+                    <p id="safeCount" class="text-xl font-bold text-gray-800">0</p>
+                    <p class="text-sm text-gray-500">configured</p>
                 </div>
 
-                <div class="bg-white/60 rounded-xl p-4 border border-white/20">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-lg {{ 'bg-green-100' if status.in_range else 'bg-red-100' }} flex items-center justify-center">
-                            {% if status.in_range %}
-                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            {% else %}
-                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            {% endif %}
-                        </div>
-                        <div>
-                            <p class="text-sm text-slate-600 font-medium">Protection Status</p>
-                            <p class="text-lg font-semibold {{ 'text-green-600' if status.in_range else 'text-red-600' }}">
-                                {{ 'Protected' if status.in_range else 'Exposed' }}
-                            </p>
-                        </div>
+                <div class="bg-white/60 rounded-xl p-6 border border-white/30">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <i data-lucide="activity" class="w-5 h-5 text-purple-600"></i>
+                        <h3 class="font-medium text-gray-900">Statistics</h3>
                     </div>
+                    <p id="totalChecks" class="text-xl font-bold text-gray-800">0</p>
+                    <p class="text-sm text-gray-500">total checks</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap gap-3 mt-6">
-                <button onclick="testNow()" 
-                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Test Now
+                <button onclick="runManualCheck()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50" id="checkBtn">
+                    <i data-lucide="play" class="w-4 h-4 mr-2"></i>
+                    Run Check Now
                 </button>
-                <button onclick="refreshLogs()" 
-                        class="inline-flex items-center px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    Refresh Logs
+                <button onclick="testWebhook()" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50" id="webhookBtn">
+                    <i data-lucide="send" class="w-4 h-4 mr-2"></i>
+                    Test Webhook
                 </button>
             </div>
         </div>
 
-        <!-- Grid Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <!-- Configuration Card -->
-            <div class="glass-morphism rounded-2xl p-6 animate-slide-up" style="animation-delay: 0.1s">
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
+        <!-- Configuration Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- IP Configuration -->
+            <div class="glass rounded-2xl p-6 fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="settings" class="w-5 h-5 text-orange-600"></i>
+                        <h3 class="text-lg font-semibold text-gray-900">IP Configuration</h3>
                     </div>
-                    <h3 class="text-lg font-semibold text-slate-900">Configuration</h3>
+                    <div id="configSourceBadge" class="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                        Loading...
+                    </div>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="bg-white/40 rounded-lg p-4 border border-white/20">
-                        <label class="text-sm font-medium text-slate-600 block mb-1">Allowed IP Range</label>
-                        <code class="text-sm font-mono text-slate-900 bg-slate-100 px-2 py-1 rounded">{{ config.ALLOWED_IP_RANGE }}</code>
-                    </div>
-                    <div class="bg-white/40 rounded-lg p-4 border border-white/20">
-                        <label class="text-sm font-medium text-slate-600 block mb-1">Webhook Endpoint</label>
-                        <code class="text-sm font-mono text-slate-900 bg-slate-100 px-2 py-1 rounded break-all">{{ config.WEBHOOK_URL }}</code>
-                    </div>
-                    <div class="flex space-x-4">
-                        <div class="bg-white/40 rounded-lg p-4 border border-white/20 flex-1">
-                            <label class="text-sm font-medium text-slate-600 block mb-1">Method</label>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {{ config.WEBHOOK_METHOD }}
-                            </span>
+                    <div class="bg-white/50 rounded-lg p-4">
+                        <label class="text-sm font-medium text-gray-600 block mb-2">Safe IP Ranges</label>
+                        <div id="safeRanges" class="space-y-2">
+                            <!-- Populated by JavaScript -->
                         </div>
-                        <div class="bg-white/40 rounded-lg p-4 border border-white/20 flex-1">
-                            <label class="text-sm font-medium text-slate-600 block mb-1">Authentication</label>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-800' if config.WEBHOOK_USER else 'bg-gray-100 text-gray-800' }}">
-                                {{ 'Enabled' if config.WEBHOOK_USER else 'Disabled' }}
-                            </span>
+                    </div>
+                    
+                    <div id="configLockWarning" class="config-locked rounded-lg p-4 hidden">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="lock" class="w-4 h-4 text-amber-600"></i>
+                            <span class="text-sm font-medium text-amber-800">Configuration locked by environment variables</span>
                         </div>
+                        <button onclick="migrateConfig()" class="mt-2 text-sm text-amber-700 hover:text-amber-900 underline">
+                            Migrate to file-based configuration →
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Statistics Card -->
-            <div class="glass-morphism rounded-2xl p-6 animate-slide-up" style="animation-delay: 0.2s">
+            <!-- Webhook Configuration -->
+            <div class="glass rounded-2xl p-6 fade-in">
                 <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-slate-900">Statistics & Info</h3>
+                    <i data-lucide="webhook" class="w-5 h-5 text-green-600"></i>
+                    <h3 class="text-lg font-semibold text-gray-900">Webhook Settings</h3>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="flex items-center justify-between p-4 bg-white/40 rounded-lg border border-white/20">
-                        <span class="text-sm font-medium text-slate-600">Check Interval</span>
-                        <span class="text-sm font-semibold text-slate-900">Every 12 hours</span>
+                    <div class="bg-white/50 rounded-lg p-4">
+                        <label class="text-sm font-medium text-gray-600 block mb-1">Endpoint URL</label>
+                        <code id="webhookUrl" class="text-sm bg-gray-100 px-2 py-1 rounded block break-all">loading...</code>
                     </div>
-                    <div class="flex items-center justify-between p-4 bg-white/40 rounded-lg border border-white/20">
-                        <span class="text-sm font-medium text-slate-600">Container</span>
-                        <span class="text-sm font-semibold text-slate-900">tiny-ip-monitor</span>
-                    </div>
-                    <div class="flex items-center justify-between p-4 bg-white/40 rounded-lg border border-white/20">
-                        <span class="text-sm font-medium text-slate-600">Network Mode</span>
-                        <span class="text-sm font-semibold text-slate-900">Host</span>
-                    </div>
-                    <div class="flex items-center justify-between p-4 bg-white/40 rounded-lg border border-white/20">
-                        <span class="text-sm font-medium text-slate-600">Auto Refresh</span>
-                        <span class="text-sm font-semibold text-slate-900">30 seconds</span>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/50 rounded-lg p-4">
+                            <label class="text-sm font-medium text-gray-600 block mb-1">Method</label>
+                            <span id="webhookMethod" class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">POST</span>
+                        </div>
+                        <div class="bg-white/50 rounded-lg p-4">
+                            <label class="text-sm font-medium text-gray-600 block mb-1">Auth</label>
+                            <span id="webhookAuth" class="inline-block px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm font-medium">Disabled</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Logs Section -->
-        <div class="glass-morphism rounded-2xl p-6 animate-slide-up" style="animation-delay: 0.3s">
+        <!-- Recent Activity -->
+        <div class="glass rounded-2xl p-6 mt-8 fade-in">
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-slate-900">Recent Activity</h3>
+                    <i data-lucide="clock" class="w-5 h-5 text-gray-600"></i>
+                    <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
                 </div>
-                <span class="text-sm text-slate-500">Last 20 entries</span>
+                <a href="/logs" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View All →</a>
             </div>
 
-            <div class="bg-slate-900 rounded-xl p-6 max-h-96 overflow-y-auto">
-                <div id="logs" class="font-mono text-sm text-green-400 space-y-1">
-                    {% for log in logs %}
-                    <div class="hover:bg-slate-800 px-2 py-1 rounded transition-colors duration-150">{{ log.strip() }}</div>
-                    {% endfor %}
+            <div class="bg-gray-900 rounded-lg p-4 max-h-48 overflow-y-auto">
+                <div id="recentLogs" class="font-mono text-sm text-green-400 space-y-1">
+                    <div class="text-gray-500">Loading logs...</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 flex items-center space-x-3">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span class="text-gray-900 font-medium">Processing...</span>
+        </div>
+    </div>
+
     <script>
-        function testNow() {
-            const button = event.target;
-            button.disabled = true;
-            button.innerHTML = '<svg class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Testing...';
-            
-            fetch('/api/test')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Test completed successfully!', 'success');
-                        setTimeout(() => location.reload(), 1000);
-                    } else {
-                        showNotification('Test failed: ' + data.error, 'error');
-                    }
-                })
-                .catch(error => {
-                    showNotification('Error: ' + error, 'error');
-                })
-                .finally(() => {
-                    button.disabled = false;
-                    button.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Test Now';
-                });
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        let currentData = {
+            status: null,
+            config: null,
+            logs: []
+        };
+
+        function showLoading(show = true) {
+            document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
         }
 
-        function refreshLogs() {
-            fetch('/api/logs')
-                .then(response => response.json())
-                .then(data => {
-                    const logsContainer = document.getElementById('logs');
-                    logsContainer.innerHTML = data.logs.map(log => 
-                        `<div class="hover:bg-slate-800 px-2 py-1 rounded transition-colors duration-150">${log.trim()}</div>`
-                    ).join('');
-                    showNotification('Logs refreshed!', 'success');
-                })
-                .catch(error => {
-                    showNotification('Error refreshing logs: ' + error, 'error');
-                });
+        function updateUI() {
+            if (!currentData.status || !currentData.config) return;
+            
+            const status = currentData.status;
+            const config = currentData.config;
+            
+            // Update status
+            const isSafe = status.is_safe;
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            if (!isSafe) {
+                statusIndicator.className = 'w-4 h-4 rounded-full bg-red-500 status-pulse';
+                statusText.textContent = 'Alert';
+                statusText.className = 'text-red-600';
+                document.getElementById('ipStatus').textContent = 'Not in any safe range - may not be home/trusted network';
+            } else {
+                statusIndicator.className = 'w-4 h-4 rounded-full bg-green-500 status-pulse';
+                statusText.textContent = 'Safe';
+                statusText.className = 'text-green-600';
+                document.getElementById('ipStatus').textContent = `In safe range: ${status.safe_range}`;
+            }
+            
+            // Update IP info
+            document.getElementById('currentIP').textContent = status.current_ip || 'Unknown';
+            document.getElementById('safeCount').textContent = status.safe_ranges?.length || 0;
+            document.getElementById('totalChecks').textContent = status.monitor_stats?.total_checks || 0;
+            
+            // Update timestamp
+            if (status.timestamp) {
+                const timestamp = new Date(status.timestamp);
+                document.getElementById('lastUpdate').textContent = timestamp.toLocaleTimeString();
+            }
+            
+            // Update safe ranges
+            const rangesContainer = document.getElementById('safeRanges');
+            if (status.safe_ranges && status.safe_ranges.length > 0) {
+                rangesContainer.innerHTML = status.safe_ranges.map(range => 
+                    `<code class="text-sm bg-green-50 text-green-800 px-2 py-1 rounded block">${range}</code>`
+                ).join('');
+            } else {
+                rangesContainer.innerHTML = '<div class="text-sm text-gray-500">No safe ranges configured</div>';
+            }
+            
+            // Update config source
+            const sourceBadge = document.getElementById('configSourceBadge');
+            sourceBadge.textContent = config.config_source || 'unknown';
+            sourceBadge.className = config.config_source === 'file' ? 
+                'px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800' : 
+                'px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-800';
+            
+            // Show/hide config lock warning
+            const lockWarning = document.getElementById('configLockWarning');
+            if (!config.is_editable) {
+                lockWarning.classList.remove('hidden');
+            } else {
+                lockWarning.classList.add('hidden');
+            }
+            
+            // Update webhook config
+            document.getElementById('webhookUrl').textContent = config.webhook_url || 'Not configured';
+            document.getElementById('webhookMethod').textContent = config.webhook_method || 'POST';
+            
+            const authSpan = document.getElementById('webhookAuth');
+            authSpan.textContent = config.webhook_user ? 'Enabled' : 'Disabled';
+            authSpan.className = config.webhook_user ? 
+                'inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-medium' : 
+                'inline-block px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm font-medium';
+            
+            // Update recent logs
+            const logsContainer = document.getElementById('recentLogs');
+            if (currentData.logs && currentData.logs.length > 0) {
+                logsContainer.innerHTML = currentData.logs.slice(0, 5).map(log => 
+                    `<div class="hover:bg-gray-800 px-2 py-1 rounded transition-colors duration-150">${escapeHtml(log)}</div>`
+                ).join('');
+            } else {
+                logsContainer.innerHTML = '<div class="text-gray-500">No recent logs</div>';
+            }
         }
 
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${
-                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-            }`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `bg-white border-l-4 ${type === 'error' ? 'border-red-500' : type === 'success' ? 'border-green-500' : 'border-blue-500'} rounded-lg shadow-lg p-4 min-w-72 transform translate-x-full transition-transform duration-300`;
             
-            setTimeout(() => notification.classList.remove('translate-x-full'), 100);
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i data-lucide="${type === 'error' ? 'alert-circle' : type === 'success' ? 'check-circle' : 'info'}" class="w-5 h-5 ${type === 'error' ? 'text-red-500' : type === 'success' ? 'text-green-500' : 'text-blue-500'} mr-3"></i>
+                    <span class="text-gray-900">${message}</span>
+                </div>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            lucide.createIcons();
+            
+            setTimeout(() => toast.classList.remove('translate-x-full'), 100);
             setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => document.body.removeChild(notification), 300);
-            }, 3000);
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
         }
 
-        // Auto-refresh functionality
-        let lastStatus = null;
-        setInterval(() => {
-            fetch('/api/status')
-                .then(response => response.json())
-                .then(data => {
-                    if (lastStatus && lastStatus.in_range !== data.in_range) {
-                        showNotification(`Status changed: ${data.status}`, data.in_range ? 'success' : 'error');
-                    }
-                    lastStatus = data;
-                })
-                .catch(error => console.error('Status check error:', error));
-        }, 30000);
+        async function fetchData() {
+            try {
+                // Fetch status
+                const statusResponse = await fetch('/api/status');
+                if (!statusResponse.ok) throw new Error('Failed to fetch status');
+                currentData.status = await statusResponse.json();
+                
+                // Fetch config
+                const configResponse = await fetch('/api/config');
+                if (!configResponse.ok) throw new Error('Failed to fetch config');
+                currentData.config = await configResponse.json();
+                
+                // Fetch recent logs
+                const logsResponse = await fetch('/api/logs?lines=5');
+                if (!logsResponse.ok) throw new Error('Failed to fetch logs');
+                const logsData = await logsResponse.json();
+                currentData.logs = logsData.logs || [];
+                
+                updateUI();
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showToast('Failed to fetch data: ' + error.message, 'error');
+            }
+        }
 
-        // Add smooth scroll behavior
-        document.documentElement.style.scrollBehavior = 'smooth';
+        function refreshData() {
+            showToast('Refreshing data...');
+            fetchData();
+        }
+
+        async function runManualCheck() {
+            const btn = document.getElementById('checkBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>Running...';
+            
+            try {
+                const response = await fetch('/api/test');
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Manual check completed successfully', 'success');
+                    setTimeout(fetchData, 1000); // Refresh data after check
+                } else {
+                    showToast('Manual check failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error running check: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="play" class="w-4 h-4 mr-2"></i>Run Check Now';
+                lucide.createIcons();
+            }
+        }
+
+        async function testWebhook() {
+            const btn = document.getElementById('webhookBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>Testing...';
+            
+            try {
+                const response = await fetch('/api/webhook-test');
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Webhook test completed successfully', 'success');
+                } else {
+                    showToast('Webhook test failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error testing webhook: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="send" class="w-4 h-4 mr-2"></i>Test Webhook';
+                lucide.createIcons();
+            }
+        }
+
+        async function migrateConfig() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/config/migrate', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    setTimeout(() => {
+                        fetchData();
+                        showLoading(false);
+                    }, 1000);
+                } else {
+                    showToast(result.message || 'Migration failed', 'error');
+                    showLoading(false);
+                }
+            } catch (error) {
+                showToast('Error migrating config: ' + error.message, 'error');
+                showLoading(false);
+            }
+        }
+
+        // Initialize the page
+        fetchData();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(fetchData, 30000);
     </script>
 </body>
 </html>

@@ -3,205 +3,556 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VPN Monitor - Configuration</title>
+    <title>ip monitor - configuration</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        border: "hsl(214.3 31.8% 91.4%)",
-                        input: "hsl(214.3 31.8% 91.4%)",
-                        ring: "hsl(222.2 84% 4.9%)",
-                        background: "hsl(0 0% 100%)",
-                        foreground: "hsl(222.2 84% 4.9%)",
-                        primary: {
-                            DEFAULT: "hsl(222.2 47.4% 11.2%)",
-                            foreground: "hsl(210 40% 98%)",
-                        },
-                    },
-                }
-            }
-        }
-    </script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        .glass-morphism {
-            background: rgba(255, 255, 255, 0.7);
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .config-locked {
+            background: linear-gradient(45deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+        }
+        
+        .input-group {
+            transition: all 0.2s ease;
+        }
+        
+        .input-group:focus-within {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-    <!-- Background Pattern -->
-    <div class="fixed inset-0 opacity-30">
-        <svg class="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.1"/>
-                </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-    </div>
+<body class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
+    <!-- Navigation -->
+    <nav class="glass sticky top-0 z-50 border-b border-white/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                        <i data-lucide="settings" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">ip monitor - configuration</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
+                        <i data-lucide="home" class="w-4 h-4 mr-2"></i>
+                        Dashboard
+                    </a>
+                    <a href="/logs" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
+                        <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
+                        Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <div class="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
-        <!-- Header -->
-        <div class="glass-morphism rounded-2xl p-8 mb-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Configuration Status -->
+        <div class="glass rounded-2xl p-6 mb-8 fade-in">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
+                    <div id="configStatusIcon" class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <i data-lucide="settings" class="w-5 h-5 text-blue-600"></i>
                     </div>
                     <div>
-                        <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
-                            Configuration
-                        </h1>
-                        <p class="text-slate-600 mt-1">VPN Monitor Settings</p>
+                        <h2 class="text-xl font-bold text-gray-900">Configuration Management</h2>
+                        <p class="text-gray-600">Source: <span id="configSource" class="font-medium">Loading...</span></p>
                     </div>
                 </div>
-                <a href="/" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    Back to Dashboard
-                </a>
+                <div class="flex items-center space-x-3">
+                    <button onclick="resetConfig()" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2"></i>
+                        Reset
+                    </button>
+                    <button onclick="exportConfig()" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
+                        <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                        Export
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Configuration Cards -->
-        <div class="space-y-6">
-            <!-- Network Configuration -->
-            <div class="glass-morphism rounded-2xl p-6">
+        <!-- Lock Warning -->
+        <div id="lockWarning" class="config-locked rounded-2xl p-6 mb-8 hidden">
+            <div class="flex items-center space-x-4 mb-4">
+                <i data-lucide="lock" class="w-6 h-6 text-amber-600"></i>
+                <div>
+                    <h3 class="text-lg font-semibold text-amber-800">Configuration Locked</h3>
+                    <p class="text-amber-700">Settings are controlled by environment variables and cannot be edited through the web interface.</p>
+                </div>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="migrateConfig()" class="inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors duration-200">
+                    <i data-lucide="migrate" class="w-4 h-4 mr-2"></i>
+                    Migrate to File Configuration
+                </button>
+                <button onclick="showEnvHelp()" class="inline-flex items-center px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg font-medium transition-colors duration-200">
+                    <i data-lucide="help-circle" class="w-4 h-4 mr-2"></i>
+                    Help
+                </button>
+            </div>
+        </div>
+
+        <!-- Configuration Form -->
+        <form id="configForm" class="space-y-8">
+            <!-- IP Configuration -->
+            <div class="glass rounded-2xl p-6 fade-in">
                 <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-slate-900">Network Configuration</h3>
+                    <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
+                    <h3 class="text-lg font-semibold text-gray-900">Safe IP Range Configuration</h3>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white/60 rounded-xl p-4 border border-white/20">
-                        <label class="text-sm font-medium text-slate-600 block mb-2">Allowed IP Range</label>
-                        <div class="bg-slate-100 rounded-lg p-3">
-                            <code class="text-sm font-mono text-slate-900">{{ config.ALLOWED_IP_RANGE }}</code>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-2">CIDR notation defining allowed VPN IP range</p>
-                    </div>
+                <div class="input-group bg-white/60 rounded-xl p-4 border border-white/30">
+                    <label for="safeRanges" class="block text-sm font-medium text-gray-700 mb-2">
+                        Safe IP Ranges
+                        <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="safeRanges" name="safe_ip_range" rows="3" 
+                              placeholder="192.168.1.0/24"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"></textarea>
+                    <p class="text-xs text-gray-500 mt-2">
+                        Comma-separated CIDR ranges. Alerts trigger when IP is NOT in any of these ranges (e.g., when not at home).
+                    </p>
+                </div>
 
-                    <div class="bg-white/60 rounded-xl p-4 border border-white/20">
-                        <label class="text-sm font-medium text-slate-600 block mb-2">Environment Variable</label>
-                        <div class="bg-slate-100 rounded-lg p-3">
-                            <code class="text-xs font-mono text-slate-700">ALLOWED_IP_RANGE</code>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-2">Set in docker-compose.yml</p>
-                    </div>
+                <div class="input-group bg-white/60 rounded-xl p-4 border border-white/30 mt-4">
+                    <label for="alertCooldown" class="block text-sm font-medium text-gray-700 mb-2">
+                        Alert Cooldown Period
+                    </label>
+                    <input type="text" id="alertCooldown" name="alert_cooldown" 
+                           placeholder="1h" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-2">
+                        Minimum time between alerts (e.g., "1h", "30m", "2h30m")
+                    </p>
                 </div>
             </div>
 
             <!-- Webhook Configuration -->
-            <div class="glass-morphism rounded-2xl p-6">
+            <div class="glass rounded-2xl p-6 fade-in">
                 <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5-5-5h5zm0 0V3"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-slate-900">Webhook Configuration</h3>
+                    <i data-lucide="webhook" class="w-5 h-5 text-green-600"></i>
+                    <h3 class="text-lg font-semibold text-gray-900">Webhook Configuration</h3>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="bg-white/60 rounded-xl p-4 border border-white/20">
-                        <label class="text-sm font-medium text-slate-600 block mb-2">Webhook URL</label>
-                        <div class="bg-slate-100 rounded-lg p-3 break-all">
-                            <code class="text-sm font-mono text-slate-900">{{ config.WEBHOOK_URL }}</code>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-2">Endpoint for receiving alert notifications</p>
+                    <div class="input-group bg-white/60 rounded-xl p-4 border border-white/30">
+                        <label for="webhookUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                            Webhook URL
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <input type="url" id="webhookUrl" name="webhook_url" 
+                               placeholder="http://your-home-assistant:8123/api/webhook/your_webhook_id"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-2">
+                            HTTP endpoint to receive alert notifications
+                        </p>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-white/60 rounded-xl p-4 border border-white/20">
-                            <label class="text-sm font-medium text-slate-600 block mb-2">HTTP Method</label>
-                            <div class="flex items-center space-x-2">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {{ config.WEBHOOK_METHOD }}
-                                </span>
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="input-group bg-white/60 rounded-xl p-4 border border-white/30">
+                            <label for="webhookMethod" class="block text-sm font-medium text-gray-700 mb-2">
+                                HTTP Method
+                            </label>
+                            <select id="webhookMethod" name="webhook_method" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="PATCH">PATCH</option>
+                                <option value="GET">GET</option>
+                                <option value="HEAD">HEAD</option>
+                            </select>
                         </div>
 
-                        <div class="bg-white/60 rounded-xl p-4 border border-white/20">
-                            <label class="text-sm font-medium text-slate-600 block mb-2">Authentication</label>
-                            <div class="flex items-center space-x-2">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-800' if config.WEBHOOK_USER else 'bg-gray-100 text-gray-800' }}">
-                                    {{ 'Enabled' if config.WEBHOOK_USER else 'Disabled' }}
-                                </span>
-                            </div>
+                        <div class="input-group bg-white/60 rounded-xl p-4 border border-white/30">
+                            <label for="checkInterval" class="block text-sm font-medium text-gray-700 mb-2">
+                                Check Interval
+                            </label>
+                            <input type="text" id="checkInterval" name="check_interval" 
+                                   placeholder="12h" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <p class="text-xs text-gray-500 mt-2">
+                                How often to check IP (e.g., "12h", "6h", "30m")
+                            </p>
                         </div>
+                    </div>
 
-                        <div class="bg-white/60 rounded-xl p-4 border border-white/20">
-                            <label class="text-sm font-medium text-slate-600 block mb-2">Status</label>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span class="text-sm text-slate-900">Configured</span>
+                    <!-- Authentication -->
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i data-lucide="shield" class="w-4 h-4 text-gray-600"></i>
+                            <h4 class="font-medium text-gray-900">Authentication (Optional)</h4>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="input-group">
+                                <label for="webhookUser" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Username
+                                </label>
+                                <input type="text" id="webhookUser" name="webhook_user" 
+                                       placeholder="username" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="webhookPass" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Password
+                                </label>
+                                <input type="password" id="webhookPass" name="webhook_pass" 
+                                       placeholder="password" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Environment Variables -->
-            <div class="glass-morphism rounded-2xl p-6">
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
+            <!-- Action Buttons -->
+            <div class="glass rounded-2xl p-6 fade-in">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="save" class="w-5 h-5 text-blue-600"></i>
+                        <span class="text-lg font-semibold text-gray-900">Save Configuration</span>
                     </div>
-                    <h3 class="text-lg font-semibold text-slate-900">Environment Variables</h3>
-                </div>
-
-                <div class="bg-slate-900 rounded-xl p-4">
-                    <pre class="text-green-400 text-sm font-mono overflow-x-auto"><code># docker-compose.yml environment section
-environment:
-  - ALLOWED_IP_RANGE={{ config.ALLOWED_IP_RANGE }}
-  - WEBHOOK_URL={{ config.WEBHOOK_URL }}
-  - WEBHOOK_METHOD={{ config.WEBHOOK_METHOD }}
-  - WEBHOOK_USER={{ config.WEBHOOK_USER if config.WEBHOOK_USER else '(not set)' }}
-  - WEBHOOK_PASS={{ '***' if config.WEBHOOK_PASS else '(not set)' }}
-  - CRON_SCHEDULE=0 */12 * * *
-  - TZ=UTC
-  - WEB_PORT=8080</code></pre>
+                    
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="testConfiguration()" 
+                                class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50" 
+                                id="testBtn">
+                            <i data-lucide="zap" class="w-4 h-4 mr-2"></i>
+                            Test Webhook
+                        </button>
+                        
+                        <button type="submit" 
+                                class="inline-flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50" 
+                                id="saveBtn">
+                            <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+                            Save Changes
+                        </button>
+                    </div>
                 </div>
             </div>
+        </form>
 
-            <!-- Update Instructions -->
-            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6">
-                <div class="flex items-center space-x-3 mb-4">
-                    <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-amber-800">How to Update Configuration</h3>
+        <!-- Configuration Preview -->
+        <div class="glass rounded-2xl p-6 mt-8 fade-in">
+            <div class="flex items-center space-x-3 mb-6">
+                <i data-lucide="eye" class="w-5 h-5 text-gray-600"></i>
+                <h3 class="text-lg font-semibold text-gray-900">Configuration Preview</h3>
+            </div>
+            
+            <div class="bg-gray-900 rounded-lg p-4">
+                <pre id="configPreview" class="text-green-400 text-sm font-mono overflow-x-auto">
+# Loading configuration...
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 flex items-center space-x-3">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span class="text-gray-900 font-medium">Processing...</span>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-96 overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Environment Variable Configuration</h3>
+                    <button onclick="hideEnvHelp()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
                 </div>
                 
-                <div class="space-y-3 text-amber-700">
-                    <p class="font-medium">To modify these settings:</p>
-                    <ol class="list-decimal list-inside space-y-2 text-sm">
-                        <li>Edit the environment variables in your <code class="bg-amber-100 px-1 rounded">docker-compose.yml</code> file</li>
-                        <li>Stop the container: <code class="bg-amber-100 px-1 rounded">docker-compose down</code></li>
-                        <li>Start with new configuration: <code class="bg-amber-100 px-1 rounded">docker-compose up -d</code></li>
-                        <li>Monitor logs: <code class="bg-amber-100 px-1 rounded">docker-compose logs -f</code></li>
-                    </ol>
+                <div class="space-y-4 text-sm text-gray-700">
+                    <p>When configuration is locked by environment variables, you need to modify your <code class="bg-gray-100 px-1 rounded">docker-compose.yml</code> file:</p>
+                    
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <pre class="text-green-400 text-xs"><code>environment:
+  - SAFE_IP_RANGE=192.168.1.0/24
+  - WEBHOOK_URL=http://homeassistant.local:8123/api/webhook/id
+  - WEBHOOK_METHOD=POST
+  - WEBHOOK_USER=username
+  - WEBHOOK_PASS=password
+  - CHECK_INTERVAL=12h
+  - ALERT_COOLDOWN=1h</code></pre>
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <p class="font-medium text-blue-800 mb-2">To enable web configuration:</p>
+                        <ol class="list-decimal list-inside space-y-1 text-blue-700">
+                            <li>Click "Migrate to File Configuration" above</li>
+                            <li>Remove environment variables from docker-compose.yml</li>
+                            <li>Restart the container: <code class="bg-blue-100 px-1 rounded">docker-compose restart</code></li>
+                        </ol>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        let currentConfig = {};
+        let originalConfig = {};
+
+        function showLoading(show = true) {
+            document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `bg-white border-l-4 ${type === 'error' ? 'border-red-500' : type === 'success' ? 'border-green-500' : 'border-blue-500'} rounded-lg shadow-lg p-4 min-w-72 transform translate-x-full transition-transform duration-300`;
+            
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i data-lucide="${type === 'error' ? 'alert-circle' : type === 'success' ? 'check-circle' : 'info'}" class="w-5 h-5 ${type === 'error' ? 'text-red-500' : type === 'success' ? 'text-green-500' : 'text-blue-500'} mr-3"></i>
+                    <span class="text-gray-900">${message}</span>
+                </div>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            lucide.createIcons();
+            
+            setTimeout(() => toast.classList.remove('translate-x-full'), 100);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function updateConfigPreview() {
+            const preview = document.getElementById('configPreview');
+            const config = getCurrentFormData();
+            
+            preview.textContent = `# ip monitor Configuration
+safe_ip_range: ${config.safe_ip_range || 'Not set'}
+webhook_url: ${config.webhook_url || 'Not set'}
+webhook_method: ${config.webhook_method || 'POST'}
+webhook_authentication: ${config.webhook_user ? 'Enabled' : 'Disabled'}
+check_interval: ${config.check_interval || '12h'}
+alert_cooldown: ${config.alert_cooldown || '1h'}
+
+# Configuration source: ${currentConfig.config_source || 'unknown'}
+# Editable via web: ${currentConfig.is_editable ? 'Yes' : 'No'}`;
+        }
+
+        function getCurrentFormData() {
+            return {
+                safe_ip_range: document.getElementById('safeRanges').value,
+                webhook_url: document.getElementById('webhookUrl').value,
+                webhook_method: document.getElementById('webhookMethod').value,
+                webhook_user: document.getElementById('webhookUser').value,
+                webhook_pass: document.getElementById('webhookPass').value,
+                check_interval: document.getElementById('checkInterval').value,
+                alert_cooldown: document.getElementById('alertCooldown').value
+            };
+        }
+
+        function populateForm(config) {
+            document.getElementById('safeRanges').value = config.safe_ip_range || '';
+            document.getElementById('webhookUrl').value = config.webhook_url || '';
+            document.getElementById('webhookMethod').value = config.webhook_method || 'POST';
+            document.getElementById('webhookUser').value = config.webhook_user || '';
+            document.getElementById('webhookPass').value = config.webhook_pass || '';
+            document.getElementById('checkInterval').value = config.check_interval || '12h';
+            document.getElementById('alertCooldown').value = config.alert_cooldown || '1h';
+            
+            updateConfigPreview();
+        }
+
+        function updateUI() {
+            const isEditable = currentConfig.is_editable;
+            const source = currentConfig.config_source || 'unknown';
+            
+            // Update status
+            document.getElementById('configSource').textContent = source;
+            
+            // Show/hide lock warning
+            const lockWarning = document.getElementById('lockWarning');
+            lockWarning.classList.toggle('hidden', isEditable);
+            
+            // Enable/disable form
+            const form = document.getElementById('configForm');
+            const inputs = form.querySelectorAll('input, select, textarea, button');
+            inputs.forEach(input => {
+                input.disabled = !isEditable;
+            });
+            
+            // Update status icon
+            const statusIcon = document.getElementById('configStatusIcon');
+            if (isEditable) {
+                statusIcon.className = 'w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center';
+                statusIcon.innerHTML = '<i data-lucide="unlock" class="w-5 h-5 text-green-600"></i>';
+            } else {
+                statusIcon.className = 'w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center';
+                statusIcon.innerHTML = '<i data-lucide="lock" class="w-5 h-5 text-amber-600"></i>';
+            }
+            
+            lucide.createIcons();
+        }
+
+        async function fetchConfig() {
+            try {
+                const response = await fetch('/api/config');
+                if (!response.ok) throw new Error('Failed to fetch configuration');
+                
+                currentConfig = await response.json();
+                originalConfig = { ...currentConfig };
+                
+                populateForm(currentConfig);
+                updateUI();
+                
+            } catch (error) {
+                console.error('Error fetching config:', error);
+                showToast('Failed to load configuration: ' + error.message, 'error');
+            }
+        }
+
+        async function saveConfiguration(event) {
+            event.preventDefault();
+            
+            if (!currentConfig.is_editable) {
+                showToast('Configuration is locked by environment variables', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const formData = getCurrentFormData();
+                
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showToast('Configuration saved successfully', 'success');
+                    await fetchConfig(); // Refresh
+                } else {
+                    showToast('Failed to save configuration: ' + (result.error || 'Unknown error'), 'error');
+                }
+                
+            } catch (error) {
+                showToast('Error saving configuration: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function testConfiguration() {
+            const btn = document.getElementById('testBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>Testing...';
+            
+            try {
+                const response = await fetch('/api/webhook-test');
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Webhook test successful', 'success');
+                } else {
+                    showToast('Webhook test failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error testing webhook: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="zap" class="w-4 h-4 mr-2"></i>Test Webhook';
+                lucide.createIcons();
+            }
+        }
+
+        async function migrateConfig() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/config/migrate', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    setTimeout(() => {
+                        fetchConfig();
+                        showLoading(false);
+                    }, 1000);
+                } else {
+                    showToast(result.message || 'Migration failed', 'error');
+                    showLoading(false);
+                }
+            } catch (error) {
+                showToast('Error migrating configuration: ' + error.message, 'error');
+                showLoading(false);
+            }
+        }
+
+        function resetConfig() {
+            if (confirm('Reset configuration to original values? Unsaved changes will be lost.')) {
+                populateForm(originalConfig);
+                showToast('Configuration reset', 'info');
+            }
+        }
+
+        function exportConfig() {
+            const config = getCurrentFormData();
+            const dataStr = JSON.stringify(config, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `ip-monitor-config-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showToast('Configuration exported', 'success');
+        }
+
+        function showEnvHelp() {
+            document.getElementById('helpModal').classList.remove('hidden');
+        }
+
+        function hideEnvHelp() {
+            document.getElementById('helpModal').classList.add('hidden');
+        }
+
+        // Event listeners
+        document.getElementById('configForm').addEventListener('submit', saveConfiguration);
+
+        // Update preview when form changes
+        ['input', 'change'].forEach(event => {
+            document.getElementById('configForm').addEventListener(event, updateConfigPreview);
+        });
+
+        // Initialize
+        fetchConfig();
+    </script>
 </body>
 </html>
