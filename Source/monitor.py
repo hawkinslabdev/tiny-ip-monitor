@@ -131,7 +131,7 @@ class IPMonitor:
         return None
     
     def is_ip_safe(self, ip_str):
-        """Check if IP is within any safe CIDR range"""
+        """Check if IP is within any protected CIDR range - returns False if IP needs protection (alert should be triggered)"""
         try:
             ip = ipaddress.ip_address(ip_str)
             safe_ranges = self.config.get_safe_ranges()
@@ -140,14 +140,14 @@ class IPMonitor:
                 try:
                     network = ipaddress.ip_network(cidr_range.strip(), strict=False)
                     if ip in network:
-                        self.logger.info(f"IP {ip_str} is in safe range {cidr_range}")
-                        return True, cidr_range
+                        self.logger.warning(f"IP {ip_str} is in protected range {cidr_range} - VPN may be disabled")
+                        return False, cidr_range  # Alert needed - IP is in protected range
                 except ValueError as e:
                     self.logger.error(f"Invalid CIDR range {cidr_range}: {e}")
                     continue
             
-            self.logger.warning(f"IP {ip_str} is not in any safe ranges")
-            return False, None
+            self.logger.info(f"IP {ip_str} is not in any protected ranges - VPN appears active")
+            return True, None  # No alert needed - IP is outside protected ranges
             
         except (ipaddress.AddressValueError, ValueError) as e:
             self.logger.error(f"Invalid IP address: {e}")
@@ -200,20 +200,21 @@ class IPMonitor:
         
         return total_seconds if total_seconds > 0 else 3600  # Default 1 hour
     
-    def send_notification(self, current_ip, safe_range_missing):
-        """Send HTTP notification when IP is not in any safe range"""
+    def send_notification(self, current_ip, protected_range):
+        """Send HTTP notification when IP is in a protected range (VPN disabled)"""
         if not self.should_send_alert():
             self.logger.info("Alert suppressed due to cooldown period")
             return
         
-        message = f"ip monitor alert: Current IP {current_ip} is not in any safe range. This may indicate you are not at home or on a trusted network."
+        message = f"VPN ALERT: Current IP {current_ip} is in protected range {protected_range}. VPN may be disabled - you are not protected!"
         
         payload = {
             "message": message,
             "current_ip": current_ip,
-            "safe_ranges": self.config.get_safe_ranges(),
+            "protected_ranges": self.config.get_safe_ranges(),
+            "matched_range": protected_range,
             "timestamp": datetime.now().isoformat(),
-            "alert_type": "unsafe_ip",
+            "alert_type": "vpn_disabled",
             "consecutive_alerts": self.state['consecutive_alerts'] + 1,
             "monitor_stats": {
                 "total_checks": self.state['total_checks'],
@@ -285,10 +286,10 @@ class IPMonitor:
         
         return {
             "current_ip": current_ip,
-            "safe_ranges": self.config.get_safe_ranges(),
+            "protected_ranges": self.config.get_safe_ranges(),
             "is_safe": is_safe,
-            "safe_range": safe_range,
-            "status": "Safe" if is_safe else "Alert",
+            "protected_range": safe_range,
+            "status": "Protected" if is_safe else "Alert",
             "timestamp": datetime.now().isoformat(),
             "config_source": self.config.config_source,
             "monitor_stats": self.state,
@@ -305,7 +306,7 @@ class IPMonitor:
         self.state['total_checks'] += 1
         
         # Log configuration
-        self.logger.info(f"Safe IP ranges: {', '.join(self.config.get_safe_ranges())}")
+        self.logger.info(f"Protected IP ranges (VPN off alert): {', '.join(self.config.get_safe_ranges())}")
         self.logger.info(f"Webhook URL: {self.config.WEBHOOK_URL}")
         self.logger.info(f"Config source: {self.config.config_source}")
         
@@ -323,20 +324,20 @@ class IPMonitor:
         
         self.state['last_known_ip'] = current_ip
         
-        # Check if IP is in safe range
-        is_safe, safe_range = self.is_ip_safe(current_ip)
+        # Check if IP is in protected range (VPN disabled)
+        is_safe, protected_range = self.is_ip_safe(current_ip)
         
         if not is_safe:
-            self.logger.warning(f"⚠️  IP {current_ip} is not in any safe range")
-            self.logger.warning("This may indicate you are not at home or on a trusted network")
+            self.logger.warning(f"⚠️  VPN ALERT: IP {current_ip} is in protected range {protected_range}")
+            self.logger.warning("VPN may be disabled - you are not protected!")
             
             if self.should_send_alert():
-                self.logger.warning("Sending notification...")
-                self.send_notification(current_ip, None)
+                self.logger.warning("Sending VPN disabled notification...")
+                self.send_notification(current_ip, protected_range)
             else:
                 self.logger.info("Alert suppressed due to cooldown period")
         else:
-            self.logger.info(f"✅ IP {current_ip} is in safe range {safe_range}")
+            self.logger.info(f"✅ VPN Active: IP {current_ip} is outside protected ranges")
             # Reset consecutive alerts counter
             self.state['consecutive_alerts'] = 0
         

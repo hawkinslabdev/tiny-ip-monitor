@@ -59,10 +59,6 @@
                     <h1 class="text-xl font-bold text-gray-900">ip monitor</h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="/logs" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
-                        <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
-                        Logs
-                    </a>
                     <a href="/config" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
                         <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
                         Config
@@ -103,8 +99,8 @@
 
                 <div class="bg-white/60 rounded-xl p-6 border border-white/30">
                     <div class="flex items-center space-x-3 mb-2">
-                        <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
-                        <h3 class="font-medium text-gray-900">Safe Ranges</h3>
+                        <i data-lucide="shield-alert" class="w-5 h-5 text-red-600"></i>
+                        <h3 class="font-medium text-gray-900">Protected Ranges</h3>
                     </div>
                     <p id="safeCount" class="text-xl font-bold text-gray-800">0</p>
                     <p class="text-sm text-gray-500">configured</p>
@@ -148,7 +144,7 @@
 
                 <div class="space-y-4">
                     <div class="bg-white/50 rounded-lg p-4">
-                        <label class="text-sm font-medium text-gray-600 block mb-2">Safe IP Ranges</label>
+                        <label class="text-sm font-medium text-gray-600 block mb-2">Protected IP Ranges (VPN Off Alert)</label>
                         <div id="safeRanges" class="space-y-2">
                             <!-- Populated by JavaScript -->
                         </div>
@@ -200,7 +196,9 @@
                     <i data-lucide="clock" class="w-5 h-5 text-gray-600"></i>
                     <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
                 </div>
-                <a href="/logs" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View All →</a>
+                <button onclick="downloadLogs()" class="inline-flex items-center px-2 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200" title="Download full logs">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                </button>
             </div>
 
             <div class="bg-gray-900 rounded-lg p-4 max-h-48 overflow-y-auto">
@@ -251,17 +249,17 @@
                 statusIndicator.className = 'w-4 h-4 rounded-full bg-red-500 status-pulse';
                 statusText.textContent = 'Alert';
                 statusText.className = 'text-red-600';
-                document.getElementById('ipStatus').textContent = 'Not in any safe range - may not be home/trusted network';
+                document.getElementById('ipStatus').textContent = `VPN disabled - IP in protected range: ${status.protected_range}`;
             } else {
                 statusIndicator.className = 'w-4 h-4 rounded-full bg-green-500 status-pulse';
-                statusText.textContent = 'Safe';
+                statusText.textContent = 'Protected';
                 statusText.className = 'text-green-600';
-                document.getElementById('ipStatus').textContent = `In safe range: ${status.safe_range}`;
+                document.getElementById('ipStatus').textContent = 'VPN active - IP outside protected ranges';
             }
             
             // Update IP info
             document.getElementById('currentIP').textContent = status.current_ip || 'Unknown';
-            document.getElementById('safeCount').textContent = status.safe_ranges?.length || 0;
+            document.getElementById('safeCount').textContent = status.protected_ranges?.length || 0;
             document.getElementById('totalChecks').textContent = status.monitor_stats?.total_checks || 0;
             
             // Update timestamp
@@ -270,14 +268,14 @@
                 document.getElementById('lastUpdate').textContent = timestamp.toLocaleTimeString();
             }
             
-            // Update safe ranges
+            // Update protected ranges
             const rangesContainer = document.getElementById('safeRanges');
-            if (status.safe_ranges && status.safe_ranges.length > 0) {
-                rangesContainer.innerHTML = status.safe_ranges.map(range => 
-                    `<code class="text-sm bg-green-50 text-green-800 px-2 py-1 rounded block">${range}</code>`
+            if (status.protected_ranges && status.protected_ranges.length > 0) {
+                rangesContainer.innerHTML = status.protected_ranges.map(range => 
+                    `<code class="text-sm bg-red-50 text-red-800 px-2 py-1 rounded block">${range}</code>`
                 ).join('');
             } else {
-                rangesContainer.innerHTML = '<div class="text-sm text-gray-500">No safe ranges configured</div>';
+                rangesContainer.innerHTML = '<div class="text-sm text-gray-500">No protected ranges configured</div>';
             }
             
             // Update config source
@@ -441,6 +439,46 @@
             } catch (error) {
                 showToast('Error migrating config: ' + error.message, 'error');
                 showLoading(false);
+            }
+        }
+
+        async function downloadLogs() {
+            try {
+                const response = await fetch('/api/logs?lines=1000');
+                const data = await response.json();
+                
+                if (data.error) {
+                    showToast('Error fetching logs: ' + data.error, 'error');
+                    return;
+                }
+                
+                // Create downloadable JSON content
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                const logData = {
+                    timestamp: new Date().toISOString(),
+                    total_logs: data.total,
+                    filters: data.filters,
+                    logs: data.logs
+                };
+                
+                const jsonContent = JSON.stringify(logData, null, 2);
+                const blob = new Blob([jsonContent], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                
+                // Create download link
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `logs_${timestamp}.json`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                showToast('Logs downloaded successfully', 'success');
+            } catch (error) {
+                showToast('Error downloading logs: ' + error.message, 'error');
             }
         }
 

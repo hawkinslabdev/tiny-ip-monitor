@@ -93,7 +93,7 @@ class Config:
             raise ValueError("WEBHOOK_METHOD must be one of: GET, POST, PUT, PATCH, HEAD")
     
     def get_safe_ranges(self):
-        """Get list of safe IP ranges"""
+        """Get list of protected IP ranges (ranges where VPN is disabled/alert should trigger)"""
         return [r.strip() for r in self.SAFE_IP_RANGE.split(',') if r.strip()]
     
     def is_editable(self):

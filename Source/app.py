@@ -96,11 +96,6 @@ def dashboard():
     """Main dashboard"""
     return render_template('dashboard.html')
 
-@app.route('/logs')
-def logs_page():
-    """Logs page"""
-    return render_template('logs.html')
-
 @app.route('/config')
 def config_page():
     """Configuration page"""
