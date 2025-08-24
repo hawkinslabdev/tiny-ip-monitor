@@ -69,6 +69,11 @@ class Config:
             self._get_env_var('ALERT_COOLDOWN', '1h')
         )
         
+        self.APP_NAME = (
+            file_config.get('app_name') or
+            self._get_env_var('APP_NAME', 'ip monitor')
+        )
+        
         # Determine config source
         self.config_source = 'file' if os.path.exists(self.config_file) and file_config else 'environment'
         
@@ -110,6 +115,7 @@ class Config:
             'webhook_pass': self.WEBHOOK_PASS,
             'check_interval': self.CHECK_INTERVAL,
             'alert_cooldown': self.ALERT_COOLDOWN,
+            'app_name': self.APP_NAME,
             'config_source': self.config_source,
             'is_editable': self.is_editable()
         }
@@ -128,7 +134,8 @@ class Config:
                 'webhook_user': new_config.get('webhook_user', self.WEBHOOK_USER),
                 'webhook_pass': new_config.get('webhook_pass', self.WEBHOOK_PASS),
                 'check_interval': new_config.get('check_interval', self.CHECK_INTERVAL),
-                'alert_cooldown': new_config.get('alert_cooldown', self.ALERT_COOLDOWN)
+                'alert_cooldown': new_config.get('alert_cooldown', self.ALERT_COOLDOWN),
+                'app_name': new_config.get('app_name', self.APP_NAME)
             }
             
             # Save to file

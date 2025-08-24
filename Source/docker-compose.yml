@@ -4,7 +4,7 @@ services:
     container_name: ip-monitor
     restart: unless-stopped
     ports:
-      - "8081:8080"  # Web dashboard at http://localhost:8081
+      - "8082:8080" 
     volumes:
       - ./logs:/var/log:rw
       - ./data:/app/data:rw  # Persistent configuration storage
@@ -16,7 +16,8 @@ services:
       # Configuration Mode: Choose ONE approach
       # Option 1: Environment Variables (traditional)
       # Uncomment these for environment-based configuration
-      # - SAFE_IP_RANGE=192.168.1.0/24
+      # - APP_NAME=ip monitor                              # Custom application name
+      # - SAFE_IP_RANGE=192.168.1.0/24                     # Protected IP ranges (VPN off alert)
       # - WEBHOOK_URL=http://homeassistant.local:8123/api/webhook/your-webhook-id
       # - WEBHOOK_METHOD=POST
       # - WEBHOOK_USER=
@@ -27,6 +28,11 @@ services:
       # Option 2: File-based Configuration (recommended)
       # Leave environment variables commented out to enable web configuration
       # Settings will be stored in ./data/config.json
+      
+      # Example: VPN Protection Setup
+      # - APP_NAME=VPN Guardian
+      # - SAFE_IP_RANGE=192.168.1.0/24,10.0.0.0/24        # Your home/ISP ranges (triggers alert when VPN is off)
+      # - WEBHOOK_URL=http://homeassistant.local:8123/api/webhook/vpn-alert
       
       # CRON Configuration (always required)
       # Format: "minute hour day month weekday"

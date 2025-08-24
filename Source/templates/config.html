@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ip monitor - configuration</title>
+    <title id="pageTitle">ip monitor - configuration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
@@ -46,16 +46,12 @@
                     <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
                         <i data-lucide="settings" class="w-5 h-5 text-white"></i>
                     </div>
-                    <h1 class="text-xl font-bold text-gray-900">ip monitor - configuration</h1>
+                    <h1 id="appNameConfig" class="text-xl font-bold text-gray-900">ip monitor - configuration</h1>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="/" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
                         <i data-lucide="home" class="w-4 h-4 mr-2"></i>
                         Dashboard
-                    </a>
-                    <a href="/logs" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-all duration-200">
-                        <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
-                        Logs
                     </a>
                 </div>
             </div>
@@ -382,6 +378,11 @@ alert_cooldown: ${config.alert_cooldown || '1h'}
             document.getElementById('webhookPass').value = config.webhook_pass || '';
             document.getElementById('checkInterval').value = config.check_interval || '12h';
             document.getElementById('alertCooldown').value = config.alert_cooldown || '1h';
+            
+            // Update app name in UI
+            const appName = config.app_name || 'ip monitor';
+            document.getElementById('appNameConfig').textContent = `${appName} - configuration`;
+            document.getElementById('pageTitle').textContent = `${appName} - configuration`;
             
             updateConfigPreview();
         }

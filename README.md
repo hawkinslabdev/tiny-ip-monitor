@@ -1,55 +1,30 @@
-# ip-monitor
+# (Tiny) IP Monitor
 
-A lightweight IP monitoring service that alerts you when your public IP address is outside your configured safe ranges (e.g., when you're not at home or on a trusted network).
+A lightweight IP monitoring service that alerts you when your public IP address is outside your configured safe ranges (e.g. when your VPN may or may not have been disabled). 
 
-![ip monitor Dashboard](Documentation/dashboard.png)
-
----
+![ip monitor Dashboard](.github/images/example.png)
 
 ## Features
 
-- Clean, responsive web dashboard with real-time updates
 - Web-based configuration with environment-variable fallback
 - Minimal resource usage (Alpine base)
 - Configurable alert cooldowns to avoid noise
 - Redundant IP detection services
-- Production-ready: health checks, error handling
 
----
 
 ## Quick Start
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/ip-monitor
-cd ip-monitor
-
-# Create data directories
-mkdir -p logs data
-
-# Start the service
-docker compose up -d
-
-# Open the dashboard
-open http://localhost:8081
-```
-
----
-
-## Docker (Production-Friendly)
-
-Pre-built images are available from GitHub Container Registry.
+Get started quickly with the Docker (Compose) Image. 
 
 ### Docker Compose (recommended)
 
 ```yaml
 services:
   ip-monitor:
-    # Pin a version (avoid :latest in production). Example:
-    image: ghcr.io/hawkinslabdev/tiny-ip-monitor:2.0.0
+    image: ghcr.io/hawkinslabdev/tiny-ip-monitor:latest
     container_name: ip-monitor
     ports:
-      - "8081:8080"
+      - "8082:8080"
     volumes:
       - ./data:/app/data
       - ./logs:/var/log
@@ -81,7 +56,7 @@ services:
 
 ### Option A: Web UI (recommended)
 1. Start the container without configuration env vars.
-2. Open `http://localhost:8081` → **Configuration**.
+2. Open `http://localhost:8082` → **Configuration**.
 3. Set safe IP ranges and webhook settings.
 4. The configuration is saved to `./data/config.json`.
 
@@ -90,6 +65,7 @@ services:
 ```yaml
 environment:
   - SAFE_IP_RANGE=192.168.1.0/24
+  - APP_NAME="VPN Guardian"
   - WEBHOOK_URL=http://homeassistant.local:8123/api/webhook/your-id
   - WEBHOOK_METHOD=POST
   - CHECK_INTERVAL=12h
@@ -109,6 +85,7 @@ environment:
 
 | Setting          | Description                                      | Default        | Example                                 |
 |------------------|--------------------------------------------------|----------------|-----------------------------------------|
+| `APP_NAME`       | Display name of the application                  | `ip monitor`   | `VPN Guardian`, `Network Monitor`       |
 | `SAFE_IP_RANGE`  | Comma-separated CIDR ranges for safe networks    | `192.168.1.0/24` | `192.168.1.0/24,10.0.1.0/24`           |
 | `WEBHOOK_URL`    | Alert notification endpoint                      | None           | `http://ha.local:8123/api/webhook/id`   |
 | `WEBHOOK_METHOD` | HTTP method for alerts                           | `POST`         | `POST`, `PUT`, `GET`                    |
@@ -117,8 +94,6 @@ environment:
 | `CHECK_INTERVAL` | How often to check IP                            | `12h`          | `6h`, `30m`, `2h30m`                    |
 | `ALERT_COOLDOWN` | Minimum time between alerts                      | `1h`           | `30m`, `2h`                             |
 | `CRON_SCHEDULE`  | Cron expression for checks                       | `0 */12 * * *` | `*/30 * * * *`                          |
-
----
 
 ## Webhook Integrations
 
