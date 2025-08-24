@@ -104,8 +104,8 @@ class VPNMonitorContainer:
                 f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] INFO: Running initial IP check\n")
             
             # Import and run monitor
-            from monitor import VPNMonitor
-            monitor = VPNMonitor()
+            from monitor import IPMonitor
+            monitor = IPMonitor()
             monitor.run_check()
             
             logger.info("Initial check completed")

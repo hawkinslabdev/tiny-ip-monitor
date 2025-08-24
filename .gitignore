@@ -3,4 +3,5 @@ logs/
 *.log
 venv/
 __pycache__/
+data/
 Source/data/monitor_state.json

@@ -17,7 +17,7 @@ def test_logging():
     print("Test 1: Creating log directory...")
     try:
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
-        print("✅ Log directory created/exists")
+        print("Success; Log directory created/exists")
     except Exception as e:
         print(f"❌ Failed to create log directory: {e}")
         return False
@@ -28,7 +28,7 @@ def test_logging():
         with open(log_file, 'a') as f:
             test_message = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] INFO: Log test - file creation\n"
             f.write(test_message)
-        print("✅ Log file created/writable")
+        print("Success; Log file created/writable")
     except Exception as e:
         print(f"❌ Failed to create/write log file: {e}")
         return False
@@ -38,12 +38,12 @@ def test_logging():
     try:
         if os.path.exists(log_file):
             if os.access(log_file, os.R_OK):
-                print("✅ Log file is readable")
+                print("Success; Log file is readable")
             else:
                 print("❌ Log file is not readable")
                 
             if os.access(log_file, os.W_OK):
-                print("✅ Log file is writable")
+                print("Success; Log file is writable")
             else:
                 print("❌ Log file is not writable")
         else:
@@ -77,7 +77,7 @@ def test_logging():
         logger.warning("Python logging test - WARNING level")
         logger.error("Python logging test - ERROR level")
         
-        print("✅ Python logging successful")
+        print("Success; Python logging successful")
     except Exception as e:
         print(f"❌ Python logging failed: {e}")
         return False
@@ -87,7 +87,7 @@ def test_logging():
     try:
         with open(log_file, 'r') as f:
             lines = f.readlines()
-            print(f"✅ Log file contains {len(lines)} lines")
+            print(f"Success; Log file contains {len(lines)} lines")
             
             if lines:
                 print("Last few log entries:")
@@ -105,15 +105,15 @@ def test_logging():
     print("Test 6: Testing monitor module...")
     try:
         sys.path.insert(0, '/app')
-        from monitor import VPNMonitor
+        from monitor import IPMonitor
         
-        monitor = VPNMonitor()
-        print("✅ Monitor initialized with logging")
+        monitor = IPMonitor()
+        print("Success; Monitor initialized with logging")
         
         # Test a quick IP check (this will log)
         current_ip = monitor.get_public_ip()
         if current_ip:
-            print(f"✅ IP retrieval successful: {current_ip}")
+            print(f"Success; IP retrieval successful: {current_ip}")
         else:
             print("⚠️  IP retrieval failed (may be network issue)")
         
@@ -122,7 +122,7 @@ def test_logging():
         return False
     
     print("=" * 50)
-    print("✅ All logging tests passed!")
+    print("Success; All logging tests passed!")
     print("=" * 50)
     return True
 

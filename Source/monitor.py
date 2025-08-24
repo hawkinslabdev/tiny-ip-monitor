@@ -337,7 +337,7 @@ class IPMonitor:
             else:
                 self.logger.info("Alert suppressed due to cooldown period")
         else:
-            self.logger.info(f"✅ VPN Active: IP {current_ip} is outside protected ranges")
+            self.logger.info(f"Success; VPN Active: IP {current_ip} is outside protected ranges")
             # Reset consecutive alerts counter
             self.state['consecutive_alerts'] = 0
         
