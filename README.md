@@ -31,6 +31,49 @@ docker compose up -d
 open http://localhost:8081
 ```
 
+## 🐳 Docker Images
+
+Pre-built Docker images are available from GitHub Container Registry:
+
+### Using Docker Run
+```bash
+# Latest version
+docker run -d \
+  --name ip-monitor \
+  -p 8080:8080 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/logs:/var/log \
+  ghcr.io/hawkinslabdev/tiny-ip-monitor:latest
+
+# Specific version
+docker run -d \
+  --name ip-monitor \
+  -p 8080:8080 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/logs:/var/log \
+  ghcr.io/hawkinslabdev/tiny-ip-monitor:v1.0.0
+```
+
+### Using Docker Compose
+```yaml
+version: '3.8'
+services:
+  ip-monitor:
+    image: ghcr.io/hawkinslabdev/tiny-ip-monitor:latest
+    container_name: ip-monitor
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/var/log
+    restart: unless-stopped
+```
+
+### Available Tags
+- `latest` - Latest stable release
+- `master` - Latest from master branch
+- `v1.0.0`, `v1.0`, etc. - Specific version releases
+
 ## ⚙️ Configuration
 
 ### Option 1: Web Configuration (Recommended)
